@@ -7,6 +7,7 @@
 + Added the `LDAP_SERVER_SD_FLAGS` control and a `-SecurityMask` parameter on `Set-OpenADObject` and `Get-OpenAD*` to select which `nTSecurityDescriptor` components (`Owner`, `Group`, `Dacl`, `Sacl`) a request reads or writes
 + Fixed `Get-OpenAD*` truncating multivalued attributes like `member` at the server's `MaxValRange` limit (e.g. 1500 entries) instead of paging through `attr;range=X-Y` responses to retrieve the full value set
 + Fixed `GroupScope` being reported as `Universal` for every security group (e.g. `Domain Admins` is `Global`, `Administrators` is `DomainLocal`) - the whole `groupType` value was compared instead of just its scope bits
++ Fixed a request larger than the outgoing pipe's pause threshold (e.g. creating or modifying a group with a few thousand members) failing with `Can't GetResult unless awaiter is completed` while the server still applied it
 
 ## v0.7.0 - 2026-08-27
 
