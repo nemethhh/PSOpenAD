@@ -4,6 +4,7 @@
 
 + **Breaking change**: `OpenADPrincipal.SID` (and its subclasses, including the objects `Get-OpenADGroupMember` returns) is now `SecurityIdentifier?` and is `$null` for a principal with no `objectSid`, such as a contact, instead of the module throwing when constructing an empty `SecurityIdentifier`
 + Fixed a `PSObject`-wrapped byte array (e.g. a value read back from `Get-OpenAD*` and fed straight into `-Add`/`-Replace`) being stringified instead of written as binary, causing the server to reject it
++ Added the `LDAP_SERVER_SD_FLAGS` control and a `-SecurityMask` parameter on `Set-OpenADObject` and `Get-OpenAD*` to select which `nTSecurityDescriptor` components (`Owner`, `Group`, `Dacl`, `Sacl`) a request reads or writes
 
 ## v0.7.0 - 2026-08-27
 
