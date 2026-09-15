@@ -6,6 +6,7 @@
 + Fixed a `PSObject`-wrapped byte array (e.g. a value read back from `Get-OpenAD*` and fed straight into `-Add`/`-Replace`) being stringified instead of written as binary, causing the server to reject it
 + Added the `LDAP_SERVER_SD_FLAGS` control and a `-SecurityMask` parameter on `Set-OpenADObject` and `Get-OpenAD*` to select which `nTSecurityDescriptor` components (`Owner`, `Group`, `Dacl`, `Sacl`) a request reads or writes
 + Fixed `Get-OpenAD*` truncating multivalued attributes like `member` at the server's `MaxValRange` limit (e.g. 1500 entries) instead of paging through `attr;range=X-Y` responses to retrieve the full value set
++ Fixed `GroupScope` being reported as `Universal` for every security group (e.g. `Domain Admins` is `Global`, `Administrators` is `DomainLocal`) - the whole `groupType` value was compared instead of just its scope bits
 
 ## v0.7.0 - 2026-08-27
 
