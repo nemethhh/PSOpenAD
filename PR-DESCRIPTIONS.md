@@ -109,6 +109,11 @@ Get-ADGroup -Identity 'Domain Admins' | Select-Object Name, GroupScope
 # Domain Admins  Global
 ```
 
+Nothing here is AD specific: on the Samba container the test suite targets, all 41
+groups reported `Universal` before the fix and 26 `DomainLocal` / 12 `Global` / 3
+`Universal` after it, which is why this is covered by an integration test as well
+as unit tests.
+
 ### Cleanup
 
 None.
@@ -121,8 +126,15 @@ None.
 
 `tests/units/PSOpenADTests/OpenADGroupTests.cs`: security global, security domain
 local (with the `System` bit), security universal, and a distribution group as a
-regression guard. The existing suite only asserted that a `GroupScope` property is
-present, never its value, which is why this went unnoticed.
+regression guard.
+
+`tests/Get-OpenADObject.Tests.ps1` adds "Reports the scope of a security group",
+which asserts the three scopes against groups every directory has, so the value a
+real server produces is covered and not just a constructed object. It fails on an
+unpatched module with `Expected Global, but got Universal`.
+
+The existing suite only asserted that a `GroupScope` property is present, never
+its value, which is why this went unnoticed.
 
 ---
 
