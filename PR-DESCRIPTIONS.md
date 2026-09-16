@@ -371,6 +371,19 @@ completed; and tracing happens after `Encode`, covering only the bytes written.
 - a known request is written to a session with a log writer attached, and the
   logged `SEND` frame must decode to exactly the encoded bytes.
 
+Both fixes are also covered through a session, against the Samba container the
+suite targets:
+
+- `tests/Set-OpenADObject.Tests.ps1`, "Sets a value larger than the outgoing pipe
+  threshold", writes a 128 KiB attribute value. A single value is enough - the
+  threshold is 64 KiB - so no large group is needed. Fails on an unpatched module
+  with `Can't GetResult unless awaiter is completed.`.
+- `tests/OpenADSession.Tests.ps1`, "Logs the request that was sent", asserts every
+  `SEND` line in a `-TracePath` log starts with `0x30`, the BER SEQUENCE an
+  LDAPMessage begins with. The existing trace test only checks that the file
+  grows, which a log of uninitialised buffers does too. Fails on an unpatched
+  module with `Expected 48, but got 39`.
+
 The test project gains a reference to `PSOpenAD.Module`, and that project makes
 its internals visible to the tests, so the session can be exercised directly.
 
@@ -471,8 +484,13 @@ contradict itself.
 not be treated as a range) and `RangedAttributeAccumulatorTests.cs` (two page
 completion, a page with no values, a missing page, and the MaxPages guard).
 
-Samba never truncates, it returns all 1600 values, so this path is only exercised
-against real AD.
+There is no integration test, because the Samba container the suite targets cannot
+produce the response this fixes: it returns all 1600 values with the attribute's
+plain name and never a `range=` one. That was checked both for a linked attribute
+(`member` on a 1600 member group) and a non-linked one (1600 values on a
+multivalued string attribute), on a patched and an unpatched module alike. The
+paging decisions are therefore covered by unit tests, and the end to end behaviour
+was validated against AD as shown above.
 
 ---
 
@@ -653,6 +671,12 @@ Get-OpenADObject -Session $session -SearchBase $ou -LDAPFilter '(objectClass=*)'
 
 `tests/units/PSOpenADTests/OpenADPrincipalTests.cs`: a principal without
 `objectSid` has a null SID, one with it keeps the value.
+
+`tests/Get-OpenADGroupMember.Tests.ps1` adds "Returns a member that has no
+objectSid", which creates a contact, puts it in a group and asserts the member
+comes back with a null SID, so the command is covered against a server and not
+just a constructed object. It fails on an unpatched module with
+`ArgumentException: sid`.
 
 ---
 
